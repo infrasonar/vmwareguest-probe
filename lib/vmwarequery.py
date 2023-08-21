@@ -16,7 +16,6 @@ async def vmwarequery_perf(
         asset: Asset,
         asset_config: dict,
         check_config: dict,
-        obj_type: vim.ManagedEntity,
         metrics: List[Tuple[str, str]] = []) -> list:
     address = check_config.get('address')
     if not address:
@@ -25,6 +24,10 @@ async def vmwarequery_perf(
     password = asset_config.get('password')
     if None in (username, password):
         logging.error(f'missing credentails for {asset}')
+        raise IgnoreResultException
+    instance_uuid = check_config.get('instanceUuid')
+    if instance_uuid is None:
+        logging.error(f'missing instanceUuid for {asset}')
         raise IgnoreResultException
     interval = check_config.get('_interval', DEFAULT_INTERVAL)
 
@@ -35,7 +38,7 @@ async def vmwarequery_perf(
             address,
             username,
             password,
-            obj_type,
+            instance_uuid,
             metrics,
             interval
         )

@@ -194,11 +194,10 @@ async def check_vcenterguest(
         raise IncompleteResultException(
             'more than one vm found for the given instanceuuid')
 
-    vms_perf = await vmwarequery_perf(
+    counters = await vmwarequery_perf(
         asset,
         asset_config,
         check_config,
-        vim.VirtualMachine,
         [('cpu', 'ready'), ('disk', 'busResets')],
     )
 
@@ -209,22 +208,20 @@ async def check_vcenterguest(
     info_dct = on_guest_info(vm.guest)
     info_dct.update(on_config_info(vm.config))
     info_dct.update(on_runtime_info(vm.runtime))
-    info_dct['name'] = instanceuuid = vm.config.instanceUuid
-    info_dct['instanceName'] = vm.name
+    info_dct['name'] = vm.name
 
     # aggregate performance metrics per guest
-    perf = vms_perf.get(instanceuuid)
-    if perf is not None:
+    if counters is not None:
         path = ('cpu', 'ready')
         total_name = ''
-        values = perf[path].get(total_name)
+        values = counters[path].get(total_name)
         if values:
             info_dct['cpuReadiness'] = max(values) / 20_000 * 100
         # number of disk bus reset commands by the virtual machine
         path = ('disk', 'busResets')
         info_dct['busResets'] = sum(
             sum(values)
-            for values in perf[path].values()
+            for values in counters[path].values()
         )
 
     # SNAPSHOTS
