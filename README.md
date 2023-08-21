@@ -36,9 +36,7 @@ asset:
   check: "vcenterguest"
   config:
     address: "192.168.1.2"
-    interval: 1
-    count: 5
-    timeout: 5
+    instance_uuid: "500208df-1a9f-8db8-2d55-6ef516d776d2"
 ```
 
 Run the probe with the `DRY_RUN` environment variable set the the yaml file above.
