@@ -26,7 +26,7 @@ async def vmwarequery(
         logging.error(f'missing hypervisor for {asset}')
         raise IgnoreResultException
     interval = check_config.get('_interval', DEFAULT_INTERVAL)
-    instance_uuid = check_config.get('uuid')
+    instance_uuid = check_config.get('instance_uuid')
 
     try:
         result = await asyncio.get_event_loop().run_in_executor(
