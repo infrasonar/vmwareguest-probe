@@ -1,5 +1,5 @@
-[![CI](https://github.com/infrasonar/wmwareguest-probe/workflows/CI/badge.svg)](https://github.com/infrasonar/wmwareguest-probe/actions)
-[![Release Version](https://img.shields.io/github/release/infrasonar/wmwareguest-probe)](https://github.com/infrasonar/wmwareguest-probe/releases)
+[![CI](https://github.com/infrasonar/vmwareguest-probe/workflows/CI/badge.svg)](https://github.com/infrasonar/vmwareguest-probe/actions)
+[![Release Version](https://img.shields.io/github/release/infrasonar/vmwareguest-probe)](https://github.com/infrasonar/vmwareguest-probe/releases)
 
 # InfraSonar VMware Guest Probe
 
@@ -20,22 +20,22 @@ Variable            | Default                        | Description
 ## Docker build
 
 ```
-docker build -t wmwareguest-probe . --no-cache
+docker build -t vmwareguest-probe . --no-cache
 ```
 
 ## Dry run
 
 Available checks:
-- `wmwareguest`
+- `vmwareguest`
 
 Create a yaml file, for example _(test.yaml)_:
 
 ```yaml
 asset:
   name: "foo.local"
-  check: "wmwareguest"
+  check: "vmwareguest"
   config:
-    address: "192.168.1.2"
+    hypervisor: "192.168.1.2"
     instance_uuid: "500208df-1a9f-8db8-2d55-6ef516d776d2"
 ```
 

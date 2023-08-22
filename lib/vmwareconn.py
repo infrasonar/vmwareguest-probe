@@ -9,17 +9,7 @@ from .asset_cache import AssetCache
 MAX_CONN_AGE = 900
 
 
-def get_by_instance_uuid(ip4, username, password, instance_uuid):
-    conn = _get_conn(ip4, username, password)
-    content = conn.RetrieveContent()
-
-    search_index = content.searchIndex
-    assert len(content.rootFolder.childEntity), 'empty root folder'
-    mo = content.rootFolder.childEntity[0]
-    return search_index.FindAllByUuid(mo, instance_uuid, True, True)
-
-
-def get_perf(ip4, username, password, instance_uuid, metrics, interval):
+def get_data(ip4, username, password, instance_uuid, asset_name, interval):
     conn = _get_conn(ip4, username, password)
     content = conn.RetrieveContent()
     content_time = conn.CurrentTime()
@@ -27,18 +17,20 @@ def get_perf(ip4, username, password, instance_uuid, metrics, interval):
     search_index = content.searchIndex
     assert len(content.rootFolder.childEntity), 'empty root folder'
     mo = content.rootFolder.childEntity[0]
-    instances = search_index.FindAllByUuid(mo, instance_uuid, True, True)
+    if instance_uuid:
+        instances = search_index.FindAllByUuid(mo, instance_uuid, True, True)
+        assert len(instances), 'no vms found for the given uuid'
+        assert len(instances) == 1, 'more than one vm found for the given uuid'
+    else:
+        instances = search_index.FindAllByDnsName(mo, asset_name, True)
+        assert len(instances), 'no vms found'
+        assert len(instances) == 1, 'more than one vm found'
 
     perf_manager = content.perfManager
     counters_lk = {c.key: c for c in perf_manager.perfCounter}
-
-    if len(instances):
-        # nothing to query
-        # this will not happen because we check beforehand if instances are found
-        return
-
     available = perf_manager.QueryAvailablePerfMetric(entity=instances[0])
 
+    metrics = (('cpu', 'ready'), ('disk', 'busResets'))
     metric_id = [
         vim.PerformanceManager.MetricId(counterId=m.counterId,
                                         instance=m.instance)
@@ -48,8 +40,7 @@ def get_perf(ip4, username, password, instance_uuid, metrics, interval):
             counters_lk[m.counterId].nameInfo.key) in metrics
     ]
     if len(metric_id) == 0:
-        # nothing to query
-        return
+        return instances[0], None
 
     end_time = content_time
     start_time = content_time - timedelta(seconds=interval + 1)
@@ -58,15 +49,15 @@ def get_perf(ip4, username, password, instance_uuid, metrics, interval):
                                             metricId=metric_id,
                                             startTime=start_time,
                                             endTime=end_time)
-    result = {m: {} for m in metrics}
+    counters = {m: {} for m in metrics}
     for stat in perf_manager.QueryStats(querySpec=[spec]):
         for val in stat.value:
             counter = counters_lk[val.id.counterId]
             path = counter.groupInfo.key, counter.nameInfo.key
             instance = val.id.instance
             value = val.value
-            result[path][instance] = value
-    return result
+            counters[path][instance] = value
+    return instances[0], counters
 
 
 def drop_connnection(host):

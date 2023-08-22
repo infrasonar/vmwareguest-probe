@@ -2,7 +2,7 @@ from libprobe.asset import Asset
 from libprobe.exceptions import CheckException, IncompleteResultException
 from pyVmomi import vim  # type: ignore
 from ..utils import datetime_to_timestamp
-from ..vmwarequery import vmwarequery, vmwarequery_perf
+from ..vmwarequery import vmwarequery
 
 
 def on_guest_info(obj):
@@ -181,33 +181,20 @@ async def check_vmwareguest(
         asset_config: dict,
         check_config: dict) -> dict:
 
-    vms_ = await vmwarequery(
+    vm, counters = await vmwarequery(
         asset,
         asset_config,
         check_config
     )
 
-    if len(vms_) == 0:
-        raise CheckException(
-            'no vm found for the given instanceuuid')
-    elif len(vms_) > 1:
-        raise IncompleteResultException(
-            'more than one vm found for the given instanceuuid')
-
-    counters = await vmwarequery_perf(
-        asset,
-        asset_config,
-        check_config,
-        [('cpu', 'ready'), ('disk', 'busResets')],
-    )
-
     virtual_disks = []
     snapshots = []
 
-    vm = vms_[0]
     info_dct = on_guest_info(vm.guest)
     info_dct.update(on_config_info(vm.config))
     info_dct.update(on_runtime_info(vm.runtime))
+    # vm.runtime.host is empty when vm is off
+    info_dct['hypervisor'] = vm.runtime.host and vm.runtime.host.name
     info_dct['name'] = vm.name
 
     # aggregate performance metrics per guest
