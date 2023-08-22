@@ -205,9 +205,10 @@ async def check_vmwareguest(
         if values:
             info_dct['cpuReadiness'] = max(values) / 20_000 * 100
         # number of disk bus reset commands by the virtual machine
+        # filter out negative values
         path = ('disk', 'busResets')
         info_dct['busResets'] = sum(
-            sum(values)
+            sum(v for v in values if v > 0)
             for values in counters[path].values()
         )
 
