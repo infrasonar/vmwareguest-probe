@@ -218,8 +218,7 @@ async def check_vmwareguest(
                 vm['snapshot'].rootSnapshotList, vm['name']))
 
     for device in vm.config.hardware.device:
-        if (device.key >= 2000) and (device.key < 3000):
-            # DISKS
+        if isinstance(device, vim.vm.device.VirtualDisk):
             disk_dct = on_virtual_disk(device)
             disk_dct['name'] = device.backing.fileName
 
