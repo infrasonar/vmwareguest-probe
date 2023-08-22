@@ -1,13 +1,13 @@
 from libprobe.probe import Probe
-from lib.check.vcenterguest import check_vcenterguest
+from lib.check.wmwareguest import check_wmwareguest
 from lib.version import __version__ as version
 
 
 if __name__ == '__main__':
     checks = {
-        'vcenterguest': check_vcenterguest
+        'wmwareguest': check_wmwareguest
     }
 
-    probe = Probe("vcenterguest", version, checks)
+    probe = Probe("wmwareguest", version, checks)
 
     probe.start()

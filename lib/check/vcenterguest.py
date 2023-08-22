@@ -176,7 +176,7 @@ def snapshot_flat(snapshots, vm_name):
             yield item
 
 
-async def check_vcenterguest(
+async def check_vmwareguest(
         asset: Asset,
         asset_config: dict,
         check_config: dict) -> dict:
