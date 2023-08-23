@@ -15,14 +15,12 @@ def get_data(ip4, username, password, instance_uuid, asset_name, interval):
     content_time = conn.CurrentTime()
 
     search_index = content.searchIndex
-    assert len(content.rootFolder.childEntity), 'empty root folder'
-    mo = content.rootFolder.childEntity[0]
     if instance_uuid:
-        instances = search_index.FindAllByUuid(mo, instance_uuid, True, True)
+        instances = search_index.FindAllByUuid(None, instance_uuid, True, True)
         assert len(instances), 'no vms found for the given uuid'
         assert len(instances) == 1, 'more than one vm found for the given uuid'
     else:
-        instances = search_index.FindAllByDnsName(mo, asset_name, True)
+        instances = search_index.FindAllByDnsName(None, asset_name, True)
         assert len(instances), 'no vms found'
         assert len(instances) == 1, 'more than one vm found'
 
