@@ -2,8 +2,7 @@ import asyncio
 import logging
 from http.client import BadStatusLine
 from libprobe.asset import Asset
-from libprobe.exceptions import CheckException, IgnoreCheckException, \
-    IgnoreResultException
+from libprobe.exceptions import CheckException
 from pyVmomi import vim  # type: ignore
 from typing import List, Tuple
 
@@ -19,12 +18,12 @@ async def vmwarequery(
     username = asset_config.get('username')
     password = asset_config.get('password')
     if None in (username, password):
-        logging.error(f'missing credentails for {asset}')
-        raise IgnoreResultException
+        msg = 'missing credentails'
+        raise CheckException(msg)
     hypervisor = check_config.get('hypervisor')
     if hypervisor is None:
-        logging.error(f'missing hypervisor for {asset}')
-        raise IgnoreResultException
+        msg = 'missing hypervisor'
+        raise CheckException(msg)
     interval = check_config.get('_interval', DEFAULT_INTERVAL)
     instance_uuid = check_config.get('instance_uuid')
 
@@ -39,15 +38,14 @@ async def vmwarequery(
             asset.name,
             interval,
         )
-    except (CheckException,
-            IgnoreCheckException,
-            IgnoreResultException):
+    except CheckException:
         raise
     except (vim.fault.InvalidLogin,
             vim.fault.NotAuthenticated):
-        raise IgnoreResultException
+        msg = 'invalid login or not authenticated'
+        raise CheckException(msg)
     except vim.fault.HostConnectFault:
-        msg = 'Failed to connect.'
+        msg = 'failed to connect'
         raise CheckException(msg)
     except (IOError,
             BadStatusLine,
