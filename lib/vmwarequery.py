@@ -53,6 +53,9 @@ async def vmwarequery(
         msg = str(e) or e.__class__.__name__
         drop_connnection(hypervisor)
         raise CheckException(msg)
+    except AssertionError as e:
+        msg = str(e)
+        raise CheckException(msg)
     except Exception as e:
         msg = str(e) or e.__class__.__name__
         logging.exception(msg)
