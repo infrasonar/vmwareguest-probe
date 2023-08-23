@@ -116,6 +116,26 @@ def on_config_info(obj):
     }
 
 
+def on_quickstats(obj):
+    # vim.vm.VirtualMachineQuickStats
+    return {
+        'activeMemory': obj.activeMemory,  # int/null
+        'balloonedMemory': obj.balloonedMemory,  # int
+        'compressedMemory': obj.compressedMemory,  # int
+        'consumedOverheadMemory': obj.consumedOverheadMemory,  # int
+        'grantedMemory': obj.grantedMemory,  # int
+        'guestHeartbeatStatus': obj.guestHeartbeatStatus,  # str
+        'guestMemoryUsage': obj.guestMemoryUsage,  # int
+        'hostMemoryUsage': obj.hostMemoryUsage,  # int
+        'overallCpuReadiness': obj.overallCpuReadiness,  # int/null
+        'overallCpuUsage': obj.overallCpuUsage,  # int
+        'privateMemory': obj.privateMemory,  # int
+        'sharedMemory': obj.sharedMemory,  # int
+        'swappedMemory': obj.swappedMemory,  # int
+        'uptimeSeconds': obj.uptimeSeconds,  # int
+    }
+
+
 def on_virtual_disk_backing_info(obj):
     # vim.vm.device.VirtualDisk.FlatVer2BackingInfo
     return {
@@ -193,6 +213,8 @@ async def check_vmwareguest(
     info_dct = on_guest_info(vm.guest)
     info_dct.update(on_config_info(vm.config))
     info_dct.update(on_runtime_info(vm.runtime))
+    info_dct.update(on_quickstats(vm.summary.quickStats))
+
     # vm.runtime.host is empty when vm is off
     info_dct['currentHypervisor'] = vm.runtime.host and vm.runtime.host.name
     info_dct['name'] = vm.name
