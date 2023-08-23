@@ -76,13 +76,13 @@ def _get_conn(host, username, password):
 
     conn = _get_connection(host, username, password)
     if not conn:
-        raise ConnectionError('Unable to connect')
+        raise ConnectionError('unable to connect')
     AssetCache.set_value((host, 'connection'), conn, MAX_CONN_AGE)
     return conn
 
 
 def _get_connection(host, username, password):
-    logging.info(f'CONNECTING to {host}')
+    logging.info(f'Connecting to {host}')
     context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
     context.verify_mode = ssl.CERT_NONE
     return connect.SmartConnect(
