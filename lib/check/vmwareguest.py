@@ -238,7 +238,7 @@ async def check_vmwareguest(
     if vm.snapshot:
         snapshots.extend(
             snapshot_flat(
-                vm['snapshot'].rootSnapshotList, vm['name']))
+                vm.snapshot.rootSnapshotList, vm.name))
 
     for device in vm.config.hardware.device:
         if isinstance(device, vim.vm.device.VirtualDisk):
