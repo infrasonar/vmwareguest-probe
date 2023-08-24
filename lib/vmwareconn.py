@@ -15,18 +15,16 @@ def get_data(ip4, username, password, instance_uuid, asset_name, interval):
     content_time = conn.CurrentTime()
 
     search_index = content.searchIndex
-    if instance_uuid:
-        instances = search_index.FindAllByUuid(None, instance_uuid, True, True)
-        assert len(instances), 'no vms found for the given uuid'
-        assert len(instances) == 1, 'more than one vm found for the given uuid'
-    else:
-        instances = search_index.FindAllByDnsName(None, asset_name, True)
-        assert len(instances), 'no vms found'
-        assert len(instances) == 1, 'more than one vm found'
+
+    instances = search_index.FindAllByUuid(None, instance_uuid, True, True)
+    assert len(instances), 'no vms found for the given instance uuid'
+    assert len(instances) == 1, \
+        'more than one vm found for the given instance uuid'
+    instance = instances[0]
 
     perf_manager = content.perfManager
     counters_lk = {c.key: c for c in perf_manager.perfCounter}
-    available = perf_manager.QueryAvailablePerfMetric(entity=instances[0])
+    available = perf_manager.QueryAvailablePerfMetric(entity=instance)
 
     metrics = (('cpu', 'ready'), ('disk', 'busResets'))
     metric_id = [
@@ -38,12 +36,12 @@ def get_data(ip4, username, password, instance_uuid, asset_name, interval):
             counters_lk[m.counterId].nameInfo.key) in metrics
     ]
     if len(metric_id) == 0:
-        return instances[0], None
+        return instance, None
 
     end_time = content_time
     start_time = content_time - timedelta(seconds=interval + 1)
     spec = vim.PerformanceManager.QuerySpec(intervalId=20,
-                                            entity=instances[0],
+                                            entity=instance,
                                             metricId=metric_id,
                                             startTime=start_time,
                                             endTime=end_time)
@@ -55,7 +53,7 @@ def get_data(ip4, username, password, instance_uuid, asset_name, interval):
             instance = val.id.instance
             value = val.value
             counters[path][instance] = value
-    return instances[0], counters
+    return instance, counters
 
 
 def drop_connnection(host):

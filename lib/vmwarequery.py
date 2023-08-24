@@ -18,14 +18,17 @@ async def vmwarequery(
     username = asset_config.get('username')
     password = asset_config.get('password')
     if None in (username, password):
-        msg = 'missing credentails'
+        msg = 'missing credentails in local config'
         raise CheckException(msg)
     hypervisor = check_config.get('hypervisor')
     if hypervisor is None:
-        msg = 'missing hypervisor'
+        msg = 'missing hypervisor in collector configuration'
         raise CheckException(msg)
     interval = check_config.get('_interval', DEFAULT_INTERVAL)
     instance_uuid = check_config.get('instance_uuid')
+    if instance_uuid is None:
+        msg = 'missing instance uuid in collector configuration'
+        raise CheckException(msg)
 
     try:
         result = await asyncio.get_event_loop().run_in_executor(
