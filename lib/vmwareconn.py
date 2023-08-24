@@ -50,9 +50,7 @@ def get_data(ip4, username, password, instance_uuid, asset_name, interval):
         for val in stat.value:
             counter = counters_lk[val.id.counterId]
             path = counter.groupInfo.key, counter.nameInfo.key
-            instance = val.id.instance
-            value = val.value
-            counters[path][instance] = value
+            counters[path][val.id.instance] = val.value
     return instance, counters
 
 
