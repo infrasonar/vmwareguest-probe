@@ -217,7 +217,8 @@ async def check_vmwareguest(
 
     # vm.runtime.host is empty when vm is off
     info_dct['currentHypervisor'] = vm.runtime.host and vm.runtime.host.name
-    info_dct['name'] = vm.name
+    info_dct['name'] = 'guest'
+    info_dct['instanceName'] = vm.name
 
     # aggregate performance metrics per guest
     if counters is not None:
