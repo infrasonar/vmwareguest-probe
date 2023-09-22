@@ -18,7 +18,7 @@ async def vmwarequery(
     username = asset_config.get('username')
     password = asset_config.get('password')
     if None in (username, password):
-        msg = 'missing credentails in local config'
+        msg = 'missing credentials in local config'
         raise CheckException(msg)
     hypervisor = check_config.get('hypervisor')
     if hypervisor is None:
