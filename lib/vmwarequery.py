@@ -2,7 +2,7 @@ import asyncio
 import logging
 from http.client import BadStatusLine
 from libprobe.asset import Asset
-from libprobe.exceptions import CheckException
+from libprobe.exceptions import CheckException, IgnoreResultException
 from pyVmomi import vim  # type: ignore
 from typing import List, Tuple
 
@@ -19,16 +19,19 @@ async def vmwarequery(
     password = asset_config.get('password')
     if None in (username, password):
         msg = 'missing credentials in local config'
-        raise CheckException(msg)
+        logging.error(msg)
+        raise IgnoreResultException
     hypervisor = check_config.get('hypervisor')
     if hypervisor is None:
         msg = 'missing hypervisor in collector configuration'
-        raise CheckException(msg)
+        logging.error(msg)
+        raise IgnoreResultException
     interval = check_config.get('_interval', DEFAULT_INTERVAL)
     instance_uuid = check_config.get('instance_uuid')
     if instance_uuid is None:
         msg = 'missing instance uuid in collector configuration'
-        raise CheckException(msg)
+        logging.error(msg)
+        raise IgnoreResultException
 
     try:
         result = await asyncio.get_event_loop().run_in_executor(
