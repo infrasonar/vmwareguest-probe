@@ -4,7 +4,7 @@ from http.client import BadStatusLine
 from libprobe.asset import Asset
 from libprobe.exceptions import CheckException, IgnoreResultException
 from pyVmomi import vim  # type: ignore
-from typing import List, Tuple
+from typing import Tuple, Optional
 
 from .vmwareconn import get_data, drop_connnection
 
@@ -14,7 +14,7 @@ DEFAULT_INTERVAL = 300
 async def vmwarequery(
         asset: Asset,
         asset_config: dict,
-        check_config: dict) -> list:
+        check_config: dict) -> Tuple[vim.ManagedEntity, Optional[dict]]:
     username = asset_config.get('username')
     password = asset_config.get('password')
     if None in (username, password):
