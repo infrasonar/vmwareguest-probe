@@ -1,5 +1,6 @@
 import logging
 import ssl
+from collections import defaultdict
 from datetime import datetime, timedelta
 from pyVmomi import vim, vmodl  # type: ignore
 from pyVim import connect
@@ -15,6 +16,7 @@ def get_data(ip4, username, password, instance_uuid, asset_name, interval):
     content_time = conn.CurrentTime()
 
     search_index = content.searchIndex
+    assert search_index is not None
 
     instances = search_index.FindAllByUuid(None, instance_uuid, True, True)
     assert len(instances), 'no vms found for the given instance uuid'
@@ -23,8 +25,11 @@ def get_data(ip4, username, password, instance_uuid, asset_name, interval):
     instance = instances[0]
 
     perf_manager = content.perfManager
+    assert perf_manager is not None
+
     counters_lk = {c.key: c for c in perf_manager.perfCounter}
-    available = perf_manager.QueryAvailablePerfMetric(entity=instance)
+    available = \
+        perf_manager.QueryAvailablePerfMetric(entity=instance)  # type: ignore
 
     metrics = (('cpu', 'ready'), ('disk', 'busResets'))
     metric_id = [
@@ -45,9 +50,9 @@ def get_data(ip4, username, password, instance_uuid, asset_name, interval):
                                             metricId=metric_id,
                                             startTime=start_time,
                                             endTime=end_time)
-    counters = {m: {} for m in metrics}
+    counters = defaultdict(dict)
     for stat in perf_manager.QueryStats(querySpec=[spec]):
-        for val in stat.value:
+        for val in stat.value:  # type: ignore
             counter = counters_lk[val.id.counterId]
             path = counter.groupInfo.key, counter.nameInfo.key
             counters[path][val.id.instance] = val.value
@@ -63,10 +68,11 @@ def drop_connnection(host):
 
 def _get_conn(host, username, password):
     conn, expired = AssetCache.get_value((host, 'connection'))
-    if expired:
-        conn._stub.DropConnections()
-    elif conn:
-        return conn
+    if conn:
+        if expired:
+            conn._stub.DropConnections()
+        else:
+            return conn
 
     conn = _get_connection(host, username, password)
     if not conn:

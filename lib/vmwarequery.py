@@ -3,7 +3,7 @@ import logging
 from http.client import BadStatusLine
 from libprobe.asset import Asset
 from libprobe.exceptions import CheckException, IgnoreResultException
-from pyVmomi import vim  # type: ignore
+from pyVmomi import vim
 from typing import Tuple, Optional
 
 from .vmwareconn import get_data, drop_connnection
@@ -47,10 +47,10 @@ async def vmwarequery(
     except CheckException:
         raise
     except (vim.fault.InvalidLogin,
-            vim.fault.NotAuthenticated):
+            vim.fault.NotAuthenticated):  # type: ignore
         msg = 'invalid login or not authenticated'
         raise CheckException(msg)
-    except vim.fault.HostConnectFault:
+    except vim.fault.HostConnectFault:  # type: ignore
         msg = 'failed to connect'
         raise CheckException(msg)
     except (IOError,
@@ -68,3 +68,7 @@ async def vmwarequery(
         raise CheckException(msg)
     else:
         return result
+
+
+# NOTE type ignore
+# pymomi typing does't tell about Exception base types
