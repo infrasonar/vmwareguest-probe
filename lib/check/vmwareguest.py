@@ -244,11 +244,11 @@ async def check_vmwareguest(
     for device in vm.config.hardware.device:
         if isinstance(device, vim.vm.device.VirtualDisk):
             disk_dct = on_virtual_disk(device)
-            disk_dct['name'] = device.backing.fileName
+            disk_dct['name'] = device.backing.fileName  # type: ignore
 
-            datastore = device.backing.datastore
+            datastore = device.backing.datastore  # type: ignore
             disk_dct['datastore'] = datastore.name
-            disk_dct['label'] = device.deviceInfo.label
+            disk_dct['label'] = device.deviceInfo.label  # type: ignore
             virtual_disks.append(disk_dct)
 
     return {

@@ -2,9 +2,9 @@ import asyncio
 import logging
 from http.client import BadStatusLine
 from libprobe.asset import Asset
-from libprobe.exceptions import CheckException
-from pyVmomi import vim  # type: ignore
-from typing import List, Tuple
+from libprobe.exceptions import CheckException, IgnoreResultException
+from pyVmomi import vim
+from typing import Tuple, Optional
 
 from .vmwareconn import get_data, drop_connnection
 
@@ -14,24 +14,27 @@ DEFAULT_INTERVAL = 300
 async def vmwarequery(
         asset: Asset,
         asset_config: dict,
-        check_config: dict) -> list:
+        check_config: dict) -> Tuple[vim.ManagedEntity, Optional[dict]]:
     username = asset_config.get('username')
     password = asset_config.get('password')
     if None in (username, password):
-        msg = 'missing credentails in local config'
-        raise CheckException(msg)
+        msg = 'missing credentials in local config'
+        logging.error(msg)
+        raise IgnoreResultException
     hypervisor = check_config.get('hypervisor')
     if hypervisor is None:
         msg = 'missing hypervisor in collector configuration'
-        raise CheckException(msg)
+        logging.error(msg)
+        raise IgnoreResultException
     interval = check_config.get('_interval', DEFAULT_INTERVAL)
     instance_uuid = check_config.get('instance_uuid')
     if instance_uuid is None:
         msg = 'missing instance uuid in collector configuration'
-        raise CheckException(msg)
+        logging.error(msg)
+        raise IgnoreResultException
 
     try:
-        result = await asyncio.get_event_loop().run_in_executor(
+        result = await asyncio.get_running_loop().run_in_executor(
             None,
             get_data,
             hypervisor,
@@ -44,10 +47,10 @@ async def vmwarequery(
     except CheckException:
         raise
     except (vim.fault.InvalidLogin,
-            vim.fault.NotAuthenticated):
+            vim.fault.NotAuthenticated):  # type: ignore
         msg = 'invalid login or not authenticated'
         raise CheckException(msg)
-    except vim.fault.HostConnectFault:
+    except vim.fault.HostConnectFault:  # type: ignore
         msg = 'failed to connect'
         raise CheckException(msg)
     except (IOError,
@@ -65,3 +68,7 @@ async def vmwarequery(
         raise CheckException(msg)
     else:
         return result
+
+
+# NOTE type ignore
+# pymomi typing does't tell about Exception base types
