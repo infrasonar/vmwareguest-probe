@@ -213,10 +213,11 @@ async def check_vmwareguest(
     info_dct = on_guest_info(vm.guest)
     info_dct.update(on_config_info(vm.config))
     info_dct.update(on_runtime_info(vm.runtime))
-    info_dct.update(on_quickstats(vm.summary.quickStats))
+    info_dct.update(on_quickstats(vm.summary.quickStats))  # type: ignore
 
     # vm.runtime.host is empty when vm is off
-    info_dct['currentHypervisor'] = vm.runtime.host and vm.runtime.host.name
+    info_dct['currentHypervisor'] = \
+        vm.runtime.host and vm.runtime.host.name  # type: ignore
     info_dct['name'] = 'guest'
     info_dct['instanceName'] = vm.name
 
@@ -239,9 +240,9 @@ async def check_vmwareguest(
     if vm.snapshot:
         snapshots.extend(
             snapshot_flat(
-                vm.snapshot.rootSnapshotList, vm.name))
+                vm.snapshot.rootSnapshotList, vm.name))  # type: ignore
 
-    for device in vm.config.hardware.device:
+    for device in vm.config.hardware.device:  # type: ignore
         if isinstance(device, vim.vm.device.VirtualDisk):
             disk_dct = on_virtual_disk(device)
             disk_dct['name'] = device.backing.fileName  # type: ignore
