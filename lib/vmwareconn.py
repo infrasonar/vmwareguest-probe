@@ -4,6 +4,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from pyVmomi import vim, vmodl  # type: ignore
 from pyVim import connect
+from .utils import parse_custom_fields
 
 from .asset_cache import AssetCache
 
@@ -56,7 +57,13 @@ def get_data(ip4, username, password, instance_uuid, asset_name, interval):
             counter = counters_lk[val.id.counterId]
             path = counter.groupInfo.key, counter.nameInfo.key
             counters[path][val.id.instance] = val.value
-    return instance, counters
+
+    custom_fields = content.customFieldsManager.field
+    custom_field_keys = {field.name: field.key for field in custom_fields}
+    custom_field_data = parse_custom_fields(instance.customValue,
+                                            custom_field_keys)
+
+    return instance, counters, custom_field_data
 
 
 def drop_connnection(host):
