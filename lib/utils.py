@@ -22,10 +22,12 @@ def parse_custom_fields(custom_fields: vim.VirtualMachine.customValue,
 
 
 def _get_field_value(custom_fields: vim.VirtualMachine.customValue,
-                     key: int) -> Any:
+                     key: int) -> str:
     try:
         key_field = [field for field in custom_fields if field.key == key][0]
         value = key_field.value
     except IndexError:
-        value = None
-    return value
+        return
+    if value is None:
+        return
+    return str(value)
