@@ -1,4 +1,5 @@
 from libprobe.asset import Asset
+from libprobe.check import Check
 from libprobe.exceptions import CheckException, IncompleteResultException
 from pyVmomi import vim  # type: ignore
 from ..utils import datetime_to_timestamp
@@ -196,66 +197,67 @@ def snapshot_flat(snapshots, vm_name):
             yield item
 
 
-async def check_vmwareguest(
-        asset: Asset,
-        asset_config: dict,
-        check_config: dict) -> dict:
+class CheckVMwareGuest(Check):
+    key = 'vmwareguest'
 
-    vm, counters, custom_fields = await vmwarequery(
-        asset,
-        asset_config,
-        check_config
-    )
+    @staticmethod
+    async def run(asset: Asset, local_config: dict, config: dict) -> dict:
 
-    virtual_disks = []
-    snapshots = []
-
-    info_dct = on_guest_info(vm.guest)
-    info_dct.update(on_config_info(vm.config))
-    info_dct.update(on_runtime_info(vm.runtime))
-    info_dct.update(on_quickstats(vm.summary.quickStats))  # type: ignore
-
-    # vm.runtime.host is empty when vm is off
-    info_dct['currentHypervisor'] = \
-        vm.runtime.host and vm.runtime.host.name  # type: ignore
-    info_dct['name'] = 'guest'
-    info_dct['instanceName'] = vm.name
-
-    # aggregate performance metrics per guest
-    if counters is not None:
-        path = ('cpu', 'ready')
-        total_name = ''
-        values = counters[path].get(total_name)
-        if values:
-            info_dct['cpuReadiness'] = max(values) / 20_000 * 100
-        # number of disk bus reset commands by the virtual machine
-        # filter out negative values
-        path = ('disk', 'busResets')
-        info_dct['busResets'] = sum(
-            sum(v for v in values if v > 0)
-            for values in counters[path].values()
+        vm, counters, custom_fields = await vmwarequery(
+            asset,
+            local_config,
+            config
         )
 
-    # SNAPSHOTS
-    if vm.snapshot:
-        snapshots.extend(
-            snapshot_flat(
-                vm.snapshot.rootSnapshotList, vm.name))  # type: ignore
+        virtual_disks = []
+        snapshots = []
 
-    for device in vm.config.hardware.device:  # type: ignore
-        if isinstance(device, vim.vm.device.VirtualDisk):
-            disk_dct = on_virtual_disk(device)
-            disk_dct['name'] = device.backing.fileName  # type: ignore
+        info_dct = on_guest_info(vm.guest)
+        info_dct.update(on_config_info(vm.config))
+        info_dct.update(on_runtime_info(vm.runtime))
+        info_dct.update(on_quickstats(vm.summary.quickStats))  # type: ignore
 
-            datastore = device.backing.datastore  # type: ignore
-            disk_dct['datastore'] = datastore.name
-            disk_dct['label'] = device.deviceInfo.label  # type: ignore
-            virtual_disks.append(disk_dct)
+        # vm.runtime.host is empty when vm is off
+        info_dct['currentHypervisor'] = \
+            vm.runtime.host and vm.runtime.host.name  # type: ignore
+        info_dct['name'] = 'guest'
+        info_dct['instanceName'] = vm.name
 
-    state = {
-        'guest': [info_dct],
-        'snapshots': snapshots,
-        'virtualDisks': virtual_disks,
-        'customFields': custom_fields,
-    }
-    return state
+        # aggregate performance metrics per guest
+        if counters is not None:
+            path = ('cpu', 'ready')
+            total_name = ''
+            values = counters[path].get(total_name)
+            if values:
+                info_dct['cpuReadiness'] = max(values) / 20_000 * 100
+            # number of disk bus reset commands by the virtual machine
+            # filter out negative values
+            path = ('disk', 'busResets')
+            info_dct['busResets'] = sum(
+                sum(v for v in values if v > 0)
+                for values in counters[path].values()
+            )
+
+        # SNAPSHOTS
+        if vm.snapshot:
+            snapshots.extend(
+                snapshot_flat(
+                    vm.snapshot.rootSnapshotList, vm.name))  # type: ignore
+
+        for device in vm.config.hardware.device:  # type: ignore
+            if isinstance(device, vim.vm.device.VirtualDisk):
+                disk_dct = on_virtual_disk(device)
+                disk_dct['name'] = device.backing.fileName  # type: ignore
+
+                datastore = device.backing.datastore  # type: ignore
+                disk_dct['datastore'] = datastore.name
+                disk_dct['label'] = device.deviceInfo.label  # type: ignore
+                virtual_disks.append(disk_dct)
+
+        state = {
+            'guest': [info_dct],
+            'snapshots': snapshots,
+            'virtualDisks': virtual_disks,
+            'customFields': custom_fields,
+        }
+        return state
