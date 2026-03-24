@@ -204,7 +204,6 @@ class CheckVMwareGuest(Check):
     async def run(asset: Asset, local_config: dict, config: dict) -> dict:
 
         vm, counters, custom_fields = await vmwarequery(
-            asset,
             local_config,
             config
         )

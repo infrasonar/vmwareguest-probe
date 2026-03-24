@@ -1,10 +1,8 @@
 import asyncio
 import logging
 from http.client import BadStatusLine
-from libprobe.asset import Asset
 from libprobe.exceptions import CheckException, IgnoreResultException
 from pyVmomi import vim
-from typing import Optional
 
 from .vmwareconn import get_data, drop_connnection
 
@@ -12,13 +10,12 @@ DEFAULT_INTERVAL = 300
 
 
 async def vmwarequery(
-        asset: Asset,
-        asset_config: dict,
+        local_config: dict,
         check_config: dict) -> tuple[vim.ManagedEntity,
-                                     Optional[dict],
-                                     Optional[list[dict]]]:
-    username = asset_config.get('username')
-    password = asset_config.get('password')
+                                     dict | None,
+                                     list[dict] | None]:
+    username = local_config.get('username')
+    password = local_config.get('password')
     if None in (username, password):
         msg = 'missing credentials in local config'
         logging.error(msg)
@@ -43,7 +40,6 @@ async def vmwarequery(
             username,
             password,
             instance_uuid,
-            asset.name,
             interval,
         )
     except CheckException:

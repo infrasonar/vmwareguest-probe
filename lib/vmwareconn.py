@@ -11,7 +11,7 @@ from .asset_cache import AssetCache
 MAX_CONN_AGE = 900
 
 
-def get_data(ip4, username, password, instance_uuid, asset_name, interval):
+def get_data(ip4, username, password, instance_uuid, interval):
     conn = _get_conn(ip4, username, password)
     content = conn.RetrieveContent()
     content_time = conn.CurrentTime()
