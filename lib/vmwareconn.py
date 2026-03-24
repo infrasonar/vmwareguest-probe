@@ -1,8 +1,8 @@
 import logging
 import ssl
 from collections import defaultdict
-from datetime import datetime, timedelta
-from pyVmomi import vim, vmodl  # type: ignore
+from datetime import timedelta
+from pyVmomi import vim
 from pyVim import connect
 from .utils import parse_custom_fields
 
@@ -53,7 +53,7 @@ def get_data(ip4, username, password, instance_uuid, interval):
                                                 endTime=end_time)
         counters = defaultdict(dict)
         for stat in perf_manager.QueryStats(querySpec=[spec]):
-            for val in stat.value:  # type: ignore
+            for val in stat.value:
                 counter = counters_lk[val.id.counterId]
                 path = counter.groupInfo.key, counter.nameInfo.key
                 counters[path][val.id.instance] = val.value

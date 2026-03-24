@@ -45,10 +45,10 @@ async def vmwarequery(
     except CheckException:
         raise
     except (vim.fault.InvalidLogin,
-            vim.fault.NotAuthenticated):  # type: ignore
+            vim.fault.NotAuthenticated):
         msg = 'invalid login or not authenticated'
         raise CheckException(msg)
-    except vim.fault.HostConnectFault:  # type: ignore
+    except vim.fault.HostConnectFault:
         msg = 'failed to connect'
         raise CheckException(msg)
     except (IOError,
