@@ -13,7 +13,7 @@ def parse_custom_fields(custom_fields: list[vim.CustomFieldsManager.Value],
                         custom_field_keys: dict[str, int]
                         ) -> list[dict[str, Any]]:
     custom_fields_lk = {
-        field.key: field.value  # type: ignore
+        field.key: field.value
         for field in custom_fields
     }
     custom_field_data = [{
@@ -29,7 +29,7 @@ def _get_field_value(fields: dict[int, vim.CustomFieldsManager.Value],
                      key: int) -> str:
     try:
         key_field = fields[key]
-        value = key_field.value  # type: ignore
+        value = key_field.value
     except KeyError:
         return f'<NO_INDEX_{key}>'
     if value is None:
