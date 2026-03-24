@@ -58,10 +58,12 @@ def get_data(ip4, username, password, instance_uuid, asset_name, interval):
                 path = counter.groupInfo.key, counter.nameInfo.key
                 counters[path][val.id.instance] = val.value
 
-    custom_fields = content.customFieldsManager.field
-    custom_field_keys = {field.name: field.key for field in custom_fields}
-    custom_field_data = parse_custom_fields(instance.customValue,
-                                            custom_field_keys)
+    custom_field_data = None
+    if content.customFieldsManager is not None:
+        custom_fields = content.customFieldsManager.field
+        custom_field_keys = {field.name: field.key for field in custom_fields}
+        custom_field_data = parse_custom_fields(instance.customValue,
+                                                custom_field_keys)
 
     return instance, counters, custom_field_data
 

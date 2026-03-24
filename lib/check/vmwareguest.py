@@ -258,6 +258,7 @@ class CheckVMwareGuest(Check):
             'guest': [info_dct],
             'snapshots': snapshots,
             'virtualDisks': virtual_disks,
-            'customFields': custom_fields,
         }
+        if custom_fields is not None:
+            state['customFields'] = custom_fields
         return state

@@ -16,7 +16,7 @@ async def vmwarequery(
         asset_config: dict,
         check_config: dict) -> tuple[vim.ManagedEntity,
                                      Optional[dict],
-                                     list[dict]]:
+                                     Optional[list[dict]]]:
     username = asset_config.get('username')
     password = asset_config.get('password')
     if None in (username, password):
