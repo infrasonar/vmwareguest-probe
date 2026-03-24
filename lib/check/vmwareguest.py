@@ -201,7 +201,7 @@ async def check_vmwareguest(
         asset_config: dict,
         check_config: dict) -> dict:
 
-    vm, counters = await vmwarequery(
+    vm, counters, custom_fields = await vmwarequery(
         asset,
         asset_config,
         check_config
@@ -252,8 +252,10 @@ async def check_vmwareguest(
             disk_dct['label'] = device.deviceInfo.label  # type: ignore
             virtual_disks.append(disk_dct)
 
-    return {
+    state = {
         'guest': [info_dct],
         'snapshots': snapshots,
         'virtualDisks': virtual_disks,
+        'customFields': custom_fields,
     }
+    return state
