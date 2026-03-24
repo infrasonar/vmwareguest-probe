@@ -1,5 +1,5 @@
 import calendar
-from pyVmomi import vim  # type: ignore
+from pyVmomi import vim
 from typing import Any
 
 

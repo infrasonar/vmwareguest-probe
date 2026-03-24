@@ -1,7 +1,6 @@
 from libprobe.asset import Asset
 from libprobe.check import Check
-from libprobe.exceptions import CheckException, IncompleteResultException
-from pyVmomi import vim  # type: ignore
+from pyVmomi import vim
 from ..utils import datetime_to_timestamp
 from ..vmwarequery import vmwarequery
 
