@@ -25,7 +25,7 @@ def parse_custom_fields(custom_fields: list[vim.CustomFieldsManager.Value],
     return custom_field_data
 
 
-def _get_field_value(fields: dict[int, str | None],
+def _get_field_value(fields: dict[int, Any],
                      key: int) -> str:
     try:
         value = fields[key]
