@@ -16,21 +16,23 @@ def parse_custom_fields(custom_fields: list[vim.CustomFieldsManager.Value],
         field.key: field.value
         for field in custom_fields
     }
-    custom_field_data = [{
-        'name': name,
-        'value': _get_field_value(custom_fields_lk, key)
-    }
-        for name, key in custom_field_keys.items()
-    ]
-    return custom_field_data
+    items = []
+    for name, key in custom_field_keys.items():
+        value = _get_field_value(custom_fields_lk, key)
+        if value is not None:
+            items.append({
+                'name': name,
+                'value': value,
+            })
+    return items
 
 
 def _get_field_value(fields: dict[int, Any],
-                     key: int) -> str:
+                     key: int) -> str | None:
     try:
         value = fields[key]
     except KeyError:
-        return f'<NO_INDEX_{key}>'
+        return None  # f'<NO_INDEX_{key}>'
     if value is None:
         return '<NONE>'
     return str(value)
