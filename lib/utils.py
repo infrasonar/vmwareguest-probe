@@ -28,8 +28,7 @@ def parse_custom_fields(custom_fields: list[vim.CustomFieldsManager.Value],
 def _get_field_value(fields: dict[int, vim.CustomFieldsManager.Value],
                      key: int) -> str:
     try:
-        key_field = fields[key]
-        value = key_field.value
+        value = fields[key]
     except KeyError:
         return f'<NO_INDEX_{key}>'
     if value is None:
