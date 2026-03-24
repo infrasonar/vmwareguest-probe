@@ -1,16 +1,17 @@
 import logging
 import ssl
 from collections import defaultdict
-from datetime import datetime, timedelta
-from pyVmomi import vim, vmodl  # type: ignore
+from datetime import timedelta
+from pyVmomi import vim
 from pyVim import connect
+from .utils import parse_custom_fields
 
 from .asset_cache import AssetCache
 
 MAX_CONN_AGE = 900
 
 
-def get_data(ip4, username, password, instance_uuid, asset_name, interval):
+def get_data(ip4, username, password, instance_uuid, interval):
     conn = _get_conn(ip4, username, password)
     content = conn.RetrieveContent()
     content_time = conn.CurrentTime()
@@ -40,23 +41,31 @@ def get_data(ip4, username, password, instance_uuid, asset_name, interval):
             counters_lk[m.counterId].groupInfo.key,
             counters_lk[m.counterId].nameInfo.key) in metrics
     ]
-    if len(metric_id) == 0:
-        return instance, None
 
-    end_time = content_time
-    start_time = content_time - timedelta(seconds=interval + 1)
-    spec = vim.PerformanceManager.QuerySpec(intervalId=20,
-                                            entity=instance,
-                                            metricId=metric_id,
-                                            startTime=start_time,
-                                            endTime=end_time)
-    counters = defaultdict(dict)
-    for stat in perf_manager.QueryStats(querySpec=[spec]):
-        for val in stat.value:  # type: ignore
-            counter = counters_lk[val.id.counterId]
-            path = counter.groupInfo.key, counter.nameInfo.key
-            counters[path][val.id.instance] = val.value
-    return instance, counters
+    counters = None
+    if len(metric_id):
+        end_time = content_time
+        start_time = content_time - timedelta(seconds=interval + 1)
+        spec = vim.PerformanceManager.QuerySpec(intervalId=20,
+                                                entity=instance,
+                                                metricId=metric_id,
+                                                startTime=start_time,
+                                                endTime=end_time)
+        counters = defaultdict(dict)
+        for stat in perf_manager.QueryStats(querySpec=[spec]):
+            for val in stat.value:
+                counter = counters_lk[val.id.counterId]
+                path = counter.groupInfo.key, counter.nameInfo.key
+                counters[path][val.id.instance] = val.value
+
+    custom_field_data = None
+    if content.customFieldsManager is not None:
+        custom_fields = content.customFieldsManager.field
+        custom_field_keys = {field.name: field.key for field in custom_fields}
+        custom_field_data = parse_custom_fields(instance.customValue,
+                                                custom_field_keys)
+
+    return instance, counters, custom_field_data
 
 
 def drop_connnection(host):
