@@ -11,22 +11,22 @@ DEFAULT_INTERVAL = 300
 
 async def vmwarequery(
         local_config: dict,
-        check_config: dict) -> tuple[vim.ManagedEntity,
-                                     dict | None,
-                                     list[dict] | None]:
+        config: dict) -> tuple[vim.ManagedEntity,
+                               dict | None,
+                               list[dict] | None]:
     username = local_config.get('username')
     password = local_config.get('password')
     if None in (username, password):
         msg = 'missing credentials in local config'
         logging.error(msg)
         raise IgnoreResultException
-    hypervisor = check_config.get('hypervisor')
+    hypervisor = config.get('hypervisor')
     if hypervisor is None:
         msg = 'missing hypervisor in collector configuration'
         logging.error(msg)
         raise IgnoreResultException
-    interval = check_config.get('_interval', DEFAULT_INTERVAL)
-    instance_uuid = check_config.get('instance_uuid')
+    interval = config.get('_interval', DEFAULT_INTERVAL)
+    instance_uuid = config.get('instance_uuid')
     if instance_uuid is None:
         msg = 'missing instance uuid in collector configuration'
         logging.error(msg)
