@@ -1,2 +1,2 @@
-libprobe==2.0.4
+libprobe==2.0.6
 pyvmomi==9.0.0.0
