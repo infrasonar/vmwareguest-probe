@@ -160,7 +160,7 @@ def on_virtual_disk_backing_info(
 def on_virtual_disk(obj: vim.vm.device.VirtualDisk) -> dict:
     # vim.vm.device.VirtualDisk
     return {
-        **on_virtual_disk_backing_info(obj.backing),  # type: ignore
+        **on_virtual_disk_backing_info(obj.backing),
         'capacityInBytes': obj.capacityInBytes,  # int
         'diskObjectId': obj.diskObjectId,  # str/null
         'nativeUnmanagedLinkedClone':
@@ -212,14 +212,14 @@ class CheckVMwareGuest(Check):
         virtual_disks = []
         snapshots = []
 
-        info_dct = on_guest_info(vm.guest)  # type: ignore
-        info_dct.update(on_config_info(vm.config))  # type: ignore
-        info_dct.update(on_runtime_info(vm.runtime))  # type: ignore
-        info_dct.update(on_quickstats(vm.summary.quickStats))  # type: ignore
+        info_dct = on_guest_info(vm.guest)
+        info_dct.update(on_config_info(vm.config))
+        info_dct.update(on_runtime_info(vm.runtime))
+        info_dct.update(on_quickstats(vm.summary.quickStats))
 
         # vm.runtime.host is empty when vm is off
         info_dct['currentHypervisor'] = \
-            vm.runtime.host and vm.runtime.host.name  # type: ignore
+            vm.runtime.host and vm.runtime.host.name
         info_dct['name'] = 'guest'
         info_dct['instanceName'] = vm.name
 
@@ -242,16 +242,16 @@ class CheckVMwareGuest(Check):
         if vm.snapshot:
             snapshots.extend(
                 snapshot_flat(
-                    vm.snapshot.rootSnapshotList, vm.name))  # type: ignore
+                    vm.snapshot.rootSnapshotList, vm.name))
 
-        for device in vm.config.hardware.device:  # type: ignore
+        for device in vm.config.hardware.device:
             if isinstance(device, vim.vm.device.VirtualDisk):
                 disk_dct = on_virtual_disk(device)
-                disk_dct['name'] = device.backing.fileName  # type: ignore
+                disk_dct['name'] = device.backing.fileName
 
-                datastore = device.backing.datastore  # type: ignore
+                datastore = device.backing.datastore
                 disk_dct['datastore'] = datastore.name
-                disk_dct['label'] = device.deviceInfo.label  # type: ignore
+                disk_dct['label'] = device.deviceInfo.label
                 virtual_disks.append(disk_dct)
 
         state = {
