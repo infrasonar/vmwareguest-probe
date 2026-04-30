@@ -11,7 +11,10 @@ from .asset_cache import AssetCache
 MAX_CONN_AGE = 900
 
 
-def get_data(ip4, username, password, instance_uuid, interval):
+def get_data(ip4: str, username: str, password: str, instance_uuid: str,
+             interval: int) -> tuple[vim.ManagedEntity,
+                                     dict | None,
+                                     list | None]:
     conn = _get_conn(ip4, username, password)
     content = conn.RetrieveContent()
     content_time = conn.CurrentTime()
