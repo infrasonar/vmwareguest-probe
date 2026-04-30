@@ -16,7 +16,7 @@ async def vmwarequery(
                                list[dict] | None]:
     username = local_config.get('username')
     password = local_config.get('password')
-    if None in (username, password):
+    if username is None or password is None:
         msg = 'missing credentials in local config'
         logging.error(msg)
         raise IgnoreResultException
