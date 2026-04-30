@@ -1,9 +1,10 @@
 import calendar
+import datetime
 from pyVmomi import vim
 from typing import Any
 
 
-def datetime_to_timestamp(inp):
+def datetime_to_timestamp(inp: datetime.datetime | None) -> int | None:
     if inp is None:
         return inp
     return calendar.timegm(inp.timetuple())
