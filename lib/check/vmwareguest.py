@@ -5,7 +5,7 @@ from ..utils import datetime_to_timestamp
 from ..vmwarequery import vmwarequery
 
 
-def on_guest_info(obj):
+def on_guest_info(obj: vim.vm.GuestInfo) -> dict:
     # vim.vm.GuestInfo
     return {
         'appHeartbeatStatus': obj.appHeartbeatStatus,  # str
@@ -30,7 +30,7 @@ def on_guest_info(obj):
     }
 
 
-def on_runtime_info(obj):
+def on_runtime_info(obj: vim.vm.RuntimeInfo) -> dict:
     # vim.vm.RuntimeInfo
     return {
         'bootTime': datetime_to_timestamp(obj.bootTime),  # int/null
@@ -59,7 +59,7 @@ def on_runtime_info(obj):
     }
 
 
-def on_virtual_hardware(obj):
+def on_virtual_hardware(obj: vim.vm.VirtualHardware) -> dict:
     # vim.vm.VirtualHardware
     return {
         'memoryMB': obj.memoryMB,
@@ -70,7 +70,7 @@ def on_virtual_hardware(obj):
     }
 
 
-def on_config_info(obj):
+def on_config_info(obj: vim.vm.ConfigInfo) -> dict:
     # vim.vm.ConfigInfo
     return {
         **on_virtual_hardware(obj.hardware),
@@ -116,7 +116,7 @@ def on_config_info(obj):
     }
 
 
-def on_quickstats(obj):
+def on_quickstats(obj: vim.vm.Summary.QuickStats) -> dict:
     # vim.vm.VirtualMachineQuickStats
     return {
         'activeMemory': obj.activeMemory,  # int/null
@@ -136,7 +136,8 @@ def on_quickstats(obj):
     }
 
 
-def on_virtual_disk_backing_info(obj):
+def on_virtual_disk_backing_info(
+        obj: vim.vm.device.VirtualDisk.FlatVer2BackingInfo) -> dict:
     # vim.vm.device.VirtualDisk.FlatVer2BackingInfo
     return {
         'changeId': obj.changeId,  # str/null
@@ -156,10 +157,10 @@ def on_virtual_disk_backing_info(obj):
     }
 
 
-def on_virtual_disk(obj):
+def on_virtual_disk(obj: vim.vm.device.VirtualDisk) -> dict:
     # vim.vm.device.VirtualDisk
     return {
-        **on_virtual_disk_backing_info(obj.backing),
+        **on_virtual_disk_backing_info(obj.backing),  # type: ignore
         'capacityInBytes': obj.capacityInBytes,  # int
         'diskObjectId': obj.diskObjectId,  # str/null
         'nativeUnmanagedLinkedClone':
@@ -167,7 +168,7 @@ def on_virtual_disk(obj):
     }
 
 
-def on_snapshot_tree(obj):
+def on_snapshot_tree(obj: vim.vm.SnapshotTree) -> dict:
     # vim.vm.SnapshotTree
     return {
         'backupManifest': obj.backupManifest,  # str
@@ -181,7 +182,7 @@ def on_snapshot_tree(obj):
     }
 
 
-def snapshot_flat(snapshots, vm_name):
+def snapshot_flat(snapshots: list[vim.vm.SnapshotTree], vm_name: str):
     for snapshot in snapshots:
         snapshot_dct = on_snapshot_tree(snapshot)
         snapshot_dct['name'] = f'{vm_name}/{snapshot.id}'
@@ -198,6 +199,7 @@ def snapshot_flat(snapshots, vm_name):
 
 class CheckVMwareGuest(Check):
     key = 'vmwareguest'
+    unchanged_eol = 0
 
     @staticmethod
     async def run(asset: Asset, local_config: dict, config: dict) -> dict:
@@ -210,9 +212,9 @@ class CheckVMwareGuest(Check):
         virtual_disks = []
         snapshots = []
 
-        info_dct = on_guest_info(vm.guest)
-        info_dct.update(on_config_info(vm.config))
-        info_dct.update(on_runtime_info(vm.runtime))
+        info_dct = on_guest_info(vm.guest)  # type: ignore
+        info_dct.update(on_config_info(vm.config))  # type: ignore
+        info_dct.update(on_runtime_info(vm.runtime))  # type: ignore
         info_dct.update(on_quickstats(vm.summary.quickStats))  # type: ignore
 
         # vm.runtime.host is empty when vm is off
